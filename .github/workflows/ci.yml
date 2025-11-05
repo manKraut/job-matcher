@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:20.10.7
+        options: --privileged
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Backend
+        run: docker build -t job-matcher-backend ./backend
+
+      - name: Build Frontend
+        run: docker build -t job-matcher-frontend ./frontend
