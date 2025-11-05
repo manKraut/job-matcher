@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.api import job_router
 
 app = FastAPI(title="Open Job Matcher API")
 
@@ -11,6 +12,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(job_router.router, prefix="/api")
 
 @app.get("/")
 def read_root():
