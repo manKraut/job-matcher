@@ -22,7 +22,7 @@ export default function App() {
       const data = await res.json();
       console.log("Fetched job data:", data);
   
-      setJobs(data.result.jobs || []);
+      setJobs(data || []);
     } catch (err) {
       setError("Failed to fetch jobs.");
     } finally {
