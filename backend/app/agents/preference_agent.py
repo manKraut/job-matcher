@@ -3,7 +3,7 @@ from openai import OpenAI
 import os
 import json
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key=os.getenv("OPEN_API_KEY"))
 
 
   # Replace with your env var later
