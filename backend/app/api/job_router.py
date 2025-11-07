@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Query
 from typing import Optional
 from app.services.job_api import fetch_jobs
+from app.models.job import JobResult
 
 router = APIRouter()
 
-@router.get("/jobs")
+@router.get("/jobs", response_model=list[JobResult])
 async def get_jobs(
     location: Optional[str] = Query(None, description="City or country"),
     page: int = 1,
