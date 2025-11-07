@@ -17,6 +17,7 @@ export default function App() {
   const [input, setInput] = useState("");
   const [preferences, setPreferences] = useState<Preferences | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [advice, setAdvice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,6 +25,7 @@ export default function App() {
     setLoading(true);
     setError("");
     setPreferences(null);
+    setAdvice(null);
     try {
       const res = await fetch("http://localhost:8000/api/agents/preferences", {
         method: "POST",
@@ -43,12 +45,31 @@ export default function App() {
     if (!preferences) return;
     setLoading(true);
     setError("");
+    setAdvice(null);
     try {
       const res = await fetch(`http://localhost:8000/api/jobs?location=${encodeURIComponent(preferences.location)}`);
       const data = await res.json();
       setJobs(data || []);
     } catch (err) {
       setError("Failed to fetch jobs.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGetAdvice = async () => {
+    if (!preferences || jobs.length === 0) return;
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:8000/api/agents/match-advice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preferences, jobs }),
+      });
+      const data = await res.json();
+      setAdvice(data.advice || "No advice generated.");
+    } catch (err) {
+      setError("Failed to generate advice.");
     } finally {
       setLoading(false);
     }
@@ -108,6 +129,19 @@ export default function App() {
                 )}
               </div>
             ))}
+            <button
+              onClick={handleGetAdvice}
+              className="mt-3 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
+            >
+              Explain My Matches
+            </button>
+          </div>
+        )}
+
+        {advice && (
+          <div className="bg-white p-4 rounded shadow">
+            <h2 className="text-lg font-semibold mb-2">🤖 Match Advisor</h2>
+            <p className="text-sm text-gray-800 whitespace-pre-wrap">{advice}</p>
           </div>
         )}
       </div>
