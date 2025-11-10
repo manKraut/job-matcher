@@ -3,10 +3,12 @@ from openai import OpenAI
 import os
 import json
 
-client = OpenAI(api_key=os.getenv("OPEN_API_KEY"))
-
-
-  # Replace with your env var later
+def get_openai_client():
+    """Lazy initialization of OpenAI client to avoid errors at import time."""
+    api_key = os.getenv("OPEN_API_KEY")
+    if not api_key:
+        raise ValueError("OPEN_API_KEY environment variable is not set")
+    return OpenAI(api_key=api_key)
 
 PREFERENCE_PROMPT = """
 You are a helpful assistant for job seekers. Your goal is to extract structured job search preferences from a user's input.
@@ -20,6 +22,7 @@ Output: {
 """
 
 def extract_preferences(user_input: str) -> Dict:
+    client = get_openai_client()
     prompt = PREFERENCE_PROMPT + f'\n\nInput: "{user_input}"\nOutput:'
     response = client.chat.completions.create(model="gpt-4",
     messages=[

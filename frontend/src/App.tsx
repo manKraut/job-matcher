@@ -13,6 +13,13 @@ type Job = {
   url: string | null;
 };
 
+// Get API URL from environment variable or use default
+// In Kubernetes (via ingress), use relative URLs. For local dev, use localhost
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? "http://localhost:8000" 
+    : ""); // Empty string = relative URLs (works with ingress)
+
 export default function App() {
   const [input, setInput] = useState("");
   const [preferences, setPreferences] = useState<Preferences | null>(null);
@@ -28,7 +35,7 @@ export default function App() {
     setAdvice(null);
     setJobs([]);
     try {
-      const res = await fetch("http://localhost:8000/api/agents/preferences", {
+      const res = await fetch(`${API_BASE_URL}/api/agents/preferences`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input }),
@@ -83,7 +90,7 @@ export default function App() {
     setError("");
     setAdvice(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/jobs?location=${encodeURIComponent(preferences.location)}`);
+      const res = await fetch(`${API_BASE_URL}/api/jobs?location=${encodeURIComponent(preferences.location)}`);
       
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ detail: `Error ${res.status}: ${res.statusText}` }));
@@ -106,7 +113,7 @@ export default function App() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:8000/api/agents/match-advice", {
+      const res = await fetch(`${API_BASE_URL}/api/agents/match-advice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ preferences, jobs }),
