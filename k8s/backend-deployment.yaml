@@ -18,3 +18,13 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 8000
+        env:
+        - name: OPEN_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-secret
+              key: api-key
+              optional: true
+        # Alternative: use value directly (not recommended for production)
+        # - name: OPEN_API_KEY
+        #   value: "your-api-key-here"

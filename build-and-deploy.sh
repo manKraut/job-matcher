@@ -19,6 +19,18 @@ cd ..
 echo "✅ Images built successfully!"
 echo ""
 echo "📦 Deploying to minikube..."
+
+# Create secret if it doesn't exist (optional - edit with your actual key)
+if ! kubectl get secret openai-secret &>/dev/null; then
+  echo "⚠️  OpenAI secret not found. Creating placeholder secret..."
+  echo "   Edit k8s/openai-secret.yaml with your actual API key, then run:"
+  echo "   kubectl apply -f k8s/openai-secret.yaml"
+  echo ""
+  kubectl create secret generic openai-secret \
+    --from-literal=api-key='placeholder-key' \
+    --dry-run=client -o yaml | kubectl apply -f - 2>/dev/null || true
+fi
+
 kubectl apply -f k8s/
 
 echo ""
