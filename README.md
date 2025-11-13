@@ -1,3 +1,33 @@
+# Job Matcher
+
+## About
+
+Job Matcher is an AI-powered career discovery platform that helps job seekers find relevant opportunities through intelligent matching and personalized analysis. The application uses OpenAI's GPT-4 to understand your job preferences in natural language and provides tailored recommendations.
+
+### How It Works
+
+1. **Describe Your Ideal Job**: Simply describe what you're looking for in plain English (e.g., "remote frontend developer job in Europe with flexible hours").
+
+2. **AI Extracts Preferences**: The application uses GPT-4 to intelligently parse your input and extract structured preferences including:
+   - Relevant keywords and skills
+   - Preferred location(s)
+   - Remote work preference
+
+3. **Job Search**: Based on your extracted preferences, the system searches for matching job opportunities.
+
+4. **Personalized Analysis**: Get AI-generated insights explaining why each job match is relevant to your preferences, helping you make informed decisions about which opportunities to pursue.
+
+### What to Expect
+
+- **Natural Language Input**: No need to fill out complex forms—just describe what you want in your own words
+- **Intelligent Matching**: AI-powered preference extraction ensures accurate understanding of your requirements
+- **Actionable Insights**: Receive personalized explanations of why jobs match your criteria
+- **Streamlined Experience**: Clean, modern interface that guides you through the job discovery process
+
+You will be required to add your own API key to test this
+
+---
+
 # Kubernetes Deployment for local Dev
 
 ## Setup Secrets
