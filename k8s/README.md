@@ -1,8 +1,8 @@
-# Kubernetes Deployment
+# Kubernetes Deployment for local Dev
 
 ## Setup Secrets
 
-Before deploying, create the OpenAI API key secret:
+Before deploying, create the OpenAI API key secret (use the provided template (openai-secret_template.yaml) to create your onwn):
 
 ```bash
 # Option 1: Create secret from file
@@ -65,3 +65,8 @@ kubectl describe pod <pod-name>
 kubectl logs <pod-name>
 ```
 
+## Important Notes
+
+- Always run `eval $(minikube docker-env)` before building images
+- The `imagePullPolicy: Never` is crucial for local development
+- Frontend uses nginx on port 80, not 5173 (which is only for dev server)

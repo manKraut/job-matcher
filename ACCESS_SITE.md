@@ -47,6 +47,7 @@ Your ingress is configured for `jobmatcher.local`:
    # Add this line (replace IP with your minikube IP):
    192.168.49.2 jobmatcher.local
    ```
+   ! NOTE: This worked on my machine with 127.0.0.1, so try this if minikube's ip does not work
 
 3. **Access the site:**
    - Frontend: http://jobmatcher.local
