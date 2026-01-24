@@ -28,6 +28,83 @@ You will be required to add your own API key to test this
 
 ---
 
+# RAG (Retrieval-Augmented Generation) System
+
+## Overview
+
+Job Matcher uses a RAG system powered by ChromaDB to provide evidence-backed decision making for AI agents. The system stores API documentation in a vector database, allowing agents to retrieve relevant information when making decisions about API calls.
+
+## How RAG Works in This Project
+
+1. **API Documentation Storage**: Rise Jobs API documentation is stored in ChromaDB as vector embeddings
+2. **Agent Integration**: When agents (preference extraction, match advisor) need to make decisions, they query the RAG system
+3. **Evidence-Backed Decisions**: Agents retrieve relevant API documentation and use it to:
+   - Extract preferences in formats that align with API requirements
+   - Understand valid location formats (city names, country names, "Remote")
+   - Make informed decisions based on actual API capabilities
+
+## Initializing the RAG Database
+
+Before using the application, you need to populate the ChromaDB database with API documentation:
+
+```bash
+cd backend
+python scripts/init_rag_db.py
+```
+
+This script will:
+- Initialize the ChromaDB database
+- Generate embeddings for all API documentation chunks
+- Store them in `./chroma_db/` directory
+
+**Note**: You need to have `OPEN_API_KEY` environment variable set, as embeddings are generated using OpenAI's API.
+
+### Reinitializing the Database
+
+If you update the API documentation, you can reset and repopulate:
+
+```bash
+python scripts/init_rag_db.py
+# When prompted, answer "yes" to reset the database
+```
+
+## Technical Details
+
+- **Vector Database**: ChromaDB (persistent, local storage)
+- **Embedding Model**: OpenAI `text-embedding-3-small`
+- **Documentation Location**: `backend/app/services/api_documentation.py`
+- **Database Location**: `backend/chroma_db/` (excluded from git)
+
+## RAG Integration Points
+
+1. **Preference Agent** (`backend/app/agents/preference_agent.py`):
+   - Retrieves API documentation about location filtering and parameters
+   - Uses docs to extract preferences in API-compatible formats
+
+2. **Match Advisor Agent** (`backend/app/agents/match_advisor_agent.py`):
+   - Retrieves documentation about response structure and data transformation
+   - Uses docs to provide context-aware advice about job results
+
+## Troubleshooting RAG
+
+If RAG is not working:
+
+1. **Check if database is initialized**:
+   ```bash
+   ls backend/chroma_db/
+   ```
+   If empty, run the initialization script.
+
+2. **Check environment variable**:
+   ```bash
+   echo $OPEN_API_KEY
+   ```
+   Must be set for embeddings to work.
+
+3. **Check logs**: The system gracefully falls back if RAG is unavailable, but check backend logs for errors.
+
+---
+
 # Kubernetes Deployment for local Dev
 
 ## Setup Secrets
@@ -79,6 +156,8 @@ kubectl apply -f k8s/openai-secret.yaml
    - Missing `openai` package → Rebuild image after updating requirements.txt
    - Missing API key → Create the secret
    - Import errors → Check all dependencies in requirements.txt
+   - Missing `chromadb` package → Rebuild image after updating requirements.txt
+   - RAG database not initialized → Run `python scripts/init_rag_db.py` in the backend container
 
 3. Rebuild and redeploy:
    ```bash
