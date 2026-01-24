@@ -46,3 +46,67 @@ class RAGService:
         print(f"   Database location: {persist_directory}")
         print(f"   Collection: {self.collection.name}")
         print(f"   Documents in collection: {self.collection.count()}")
+    
+    def _get_embeddings(self, texts: list[str]) -> list[list[float]]:
+        """
+        Generate embeddings for a list of texts using OpenAI.
+        
+        Args:
+            texts: List of text strings to embed
+            
+        Returns:
+            List of embedding vectors
+        """
+        try:
+            response = self.openai_client.embeddings.create(
+                model=self.embedding_model,
+                input=texts
+            )
+            return [item.embedding for item in response.data]
+        except Exception as e:
+            print(f"❌ Error generating embeddings: {e}")
+            raise
+    
+    def add_documentation(self, documents: list[str], metadatas: list[dict] = None):
+        """
+        Add API documentation to the vector database.
+        
+        Args:
+            documents: List of documentation strings to add
+            metadatas: Optional list of metadata dictionaries for each document
+        """
+        if not documents:
+            return
+        
+        # Generate embeddings for documents
+        embeddings = self._get_embeddings(documents)
+        
+        # Generate IDs for documents
+        existing_count = self.collection.count()
+        ids = [f"doc_{existing_count + i}" for i in range(len(documents))]
+        
+        # Default metadata if not provided
+        if metadatas is None:
+            metadatas = [{"source": "api_docs", "type": "documentation"} for _ in documents]
+        
+        # Add to collection
+        self.collection.add(
+            embeddings=embeddings,
+            documents=documents,
+            metadatas=metadatas,
+            ids=ids
+        )
+        
+        print(f"✅ Added {len(documents)} documents to ChromaDB")
+    
+    def reset_collection(self):
+        """
+        Reset the collection (delete all documents).
+        Use with caution!
+        """
+        self.client.delete_collection(name="api_documentation")
+        self.collection = self.client.get_or_create_collection(
+            name="api_documentation",
+            metadata={"description": "Rise Jobs API documentation and usage guidelines"}
+        )
+        print("🔄 Collection reset successfully")
