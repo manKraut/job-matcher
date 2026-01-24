@@ -99,6 +99,53 @@ class RAGService:
         
         print(f"✅ Added {len(documents)} documents to ChromaDB")
     
+    def retrieve_relevant_docs(self, query: str, n_results: int = 3) -> list[str]:
+        """
+        Retrieve relevant documentation based on a query.
+        
+        Args:
+            query: The search query
+            n_results: Number of relevant documents to retrieve
+            
+        Returns:
+            List of relevant document strings
+        """
+        if self.collection.count() == 0:
+            return []
+        
+        # Get query embedding
+        query_embedding = self._get_embeddings([query])[0]
+        
+        # Search for relevant documents
+        results = self.collection.query(
+            query_embeddings=[query_embedding],
+            n_results=min(n_results, self.collection.count())
+        )
+        
+        # Extract documents from results
+        if results['documents'] and len(results['documents']) > 0:
+            return results['documents'][0]
+        return []
+    
+    def format_docs_for_prompt(self, docs: list[str]) -> str:
+        """
+        Format retrieved documentation chunks for inclusion in agent prompts.
+        
+        Args:
+            docs: List of documentation strings
+            
+        Returns:
+            Formatted string ready to include in prompts
+        """
+        if not docs:
+            return ""
+        
+        formatted = "\n\n## API Documentation Reference:\n\n"
+        for i, doc in enumerate(docs, 1):
+            formatted += f"### Reference {i}:\n{doc.strip()}\n\n"
+        
+        return formatted
+    
     def reset_collection(self):
         """
         Reset the collection (delete all documents).

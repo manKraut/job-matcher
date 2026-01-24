@@ -8,11 +8,30 @@ def get_openai_client():
         raise ValueError("OPEN_API_KEY environment variable is not set")
     return OpenAI(api_key=api_key)
 
-ADVISOR_SYSTEM_PROMPT = """
-You are a job search advisor. Based on the user’s preferences and a list of job matches, you provide a short explanation of why the results are relevant. Be friendly, clear, and concise.
+BASE_ADVISOR_SYSTEM_PROMPT = """
+You are a job search advisor. Based on the user's preferences and a list of job matches, you provide a short explanation of why the results are relevant. Be friendly, clear, and concise.
 """
 
 def explain_job_matches(preferences: dict, jobs: list) -> str:
+    """
+    Explain job matches using RAG-guided agent.
+    
+    Uses RAG to retrieve relevant API documentation to provide context-aware advice
+    about the job search results and API capabilities.
+    """
+    # Retrieve relevant API documentation using RAG
+    from app.services.rag_utils import get_api_documentation_for_agent
+    
+    # Query RAG for response structure, data transformation, and API capabilities
+    rag_query = "Rise Jobs API response structure data transformation job results"
+    api_docs = get_api_documentation_for_agent(rag_query, n_results=2)
+    
+    # Build enhanced system prompt with API documentation
+    system_prompt = BASE_ADVISOR_SYSTEM_PROMPT
+    if api_docs:
+        system_prompt += api_docs
+        system_prompt += "\n\nUse the API documentation above to provide informed advice about the job search results and their relevance to the user's preferences."
+    
     job_titles = [job["title"] for job in jobs[:5]]
     companies = [job["company"] for job in jobs[:5] if job.get("company")]
 
@@ -33,7 +52,7 @@ Top Jobs Found:
     """
 
     messages = [
-        {"role": "system", "content": ADVISOR_SYSTEM_PROMPT},
+        {"role": "system", "content": system_prompt},
         {"role": "user", "content": f"{user_pref_str}\n\n{job_data_str}"}
     ]
 
