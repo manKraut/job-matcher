@@ -14,7 +14,6 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: job-matcher-frontend:latest
-        imagePullPolicy: Never
+        image: europe-west1-docker.pkg.dev/ml-cloud-374512/job-matcher/frontend:v1
         ports:
         - containerPort: 80

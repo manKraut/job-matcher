@@ -14,8 +14,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: job-matcher-backend:latest
-        imagePullPolicy: Never
+        image: europe-west1-docker.pkg.dev/ml-cloud-374512/job-matcher/backend:v1
         ports:
         - containerPort: 8000
         env:
@@ -24,7 +23,6 @@ spec:
             secretKeyRef:
               name: openai-secret
               key: api-key
-              optional: true
         # Alternative: use value directly (not recommended for production)
         # - name: OPEN_API_KEY
         #   value: "your-api-key-here"
