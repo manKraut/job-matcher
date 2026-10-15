@@ -23,7 +23,7 @@ def explain_job_matches(preferences: dict, jobs: list) -> str:
     from app.services.rag_utils import get_api_documentation_for_agent
     
     # Query RAG for response structure, data transformation, and API capabilities
-    rag_query = "Rise Jobs API response structure data transformation job results"
+    rag_query = "Arbeitnow job API response structure data transformation job results"
     api_docs = get_api_documentation_for_agent(rag_query, n_results=2)
     
     # Build enhanced system prompt with API documentation

@@ -36,7 +36,7 @@ Job Matcher uses a RAG system powered by ChromaDB to provide evidence-backed dec
 
 ## How RAG Works in This Project
 
-1. **API Documentation Storage**: Rise Jobs API documentation is stored in ChromaDB as vector embeddings
+1. **API Documentation Storage**: Arbeitnow Job Board API documentation is stored in ChromaDB as vector embeddings
 2. **Agent Integration**: When agents (preference extraction, match advisor) need to make decisions, they query the RAG system
 3. **Evidence-Backed Decisions**: Agents retrieve relevant API documentation and use it to:
    - Extract preferences in formats that align with API requirements

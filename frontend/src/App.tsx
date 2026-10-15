@@ -27,6 +27,7 @@ export default function App() {
   const [advice, setAdvice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [searched, setSearched] = useState(false);
 
   const handleClarify = async () => {
     setLoading(true);
@@ -34,6 +35,7 @@ export default function App() {
     setPreferences(null);
     setAdvice(null);
     setJobs([]);
+    setSearched(false);
     try {
       const res = await fetch(`${API_BASE_URL}/api/agents/preferences`, {
         method: "POST",
@@ -89,8 +91,13 @@ export default function App() {
     setLoading(true);
     setError("");
     setAdvice(null);
+    setSearched(false);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/jobs?location=${encodeURIComponent(preferences.location)}`);
+      const params = new URLSearchParams();
+      if (preferences.location) params.set("location", preferences.location);
+      preferences.keywords.forEach((keyword) => params.append("keywords", keyword));
+      if (preferences.remote) params.set("remote", "true");
+      const res = await fetch(`${API_BASE_URL}/api/jobs?${params.toString()}`);
       
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ detail: `Error ${res.status}: ${res.statusText}` }));
@@ -99,6 +106,7 @@ export default function App() {
       
       const data = await res.json();
       setJobs(data || []);
+      setSearched(true);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch jobs. Please try again.";
       setError(errorMessage);
@@ -268,6 +276,13 @@ export default function App() {
           </section>
         )}
 
+        {/* No Results */}
+        {searched && !loading && jobs.length === 0 && (
+          <div className="mb-6 bg-amber-50 border-l-4 border-amber-400 p-4 rounded-lg animate-slide-up">
+            <p className="text-sm font-medium text-amber-800">No available jobs with those specs</p>
+          </div>
+        )}
+
         {/* Jobs Section */}
         {jobs.length > 0 && (
           <section className="bg-white/80 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-xl border border-white/20 mb-6 animate-slide-up">
@@ -367,6 +382,18 @@ export default function App() {
             </div>
           </section>
         )}
+
+        <footer className="mt-8 text-center text-xs text-slate-500">
+          Job data provided by{" "}
+          <a
+            href="https://www.arbeitnow.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-indigo-600"
+          >
+            Arbeitnow
+          </a>
+        </footer>
       </div>
     </div>
   );

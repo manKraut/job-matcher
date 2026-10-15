@@ -17,7 +17,7 @@ backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir))
 
 from app.services.rag_service import RAGService
-from app.services.api_documentation import RISE_JOBS_API_DOCS
+from app.services.api_documentation import ARBEITNOW_API_DOCS
 
 def main():
     """Initialize and populate the RAG database with API documentation."""
@@ -59,21 +59,21 @@ def main():
         "integration_notes"
     ]
     
-    for i, doc in enumerate(RISE_JOBS_API_DOCS):
+    for i, doc in enumerate(ARBEITNOW_API_DOCS):
         metadatas.append({
-            "source": "rise_jobs_api",
+            "source": "arbeitnow_job_board_api",
             "type": doc_types[i] if i < len(doc_types) else "general",
-            "api_name": "Rise Jobs API",
+            "api_name": "Arbeitnow Job Board API",
             "version": "v1"
         })
     
     # Add documentation to database
-    print(f"📚 Adding {len(RISE_JOBS_API_DOCS)} documentation chunks to database...")
+    print(f"📚 Adding {len(ARBEITNOW_API_DOCS)} documentation chunks to database...")
     print("   This may take a moment as embeddings are generated...\n")
     
     try:
         rag_service.add_documentation(
-            documents=RISE_JOBS_API_DOCS,
+            documents=ARBEITNOW_API_DOCS,
             metadatas=metadatas
         )
         

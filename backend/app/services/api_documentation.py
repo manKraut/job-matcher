@@ -1,190 +1,186 @@
 """
-API Documentation content for the Rise Jobs API.
-This documentation will be stored in ChromaDB for RAG retrieval.
+API Documentation content for the Arbeitnow Job Board API (as used by this app).
+This documentation is stored in ChromaDB for RAG retrieval.
+
+Source: https://documenter.getpostman.com/view/18545278/UVJbJdKh
+Keep the order of the chunks in sync with `doc_types` in scripts/init_rag_db.py.
 """
 
-# Rise Jobs API Documentation
-RISE_JOBS_API_DOCS = [
+# Arbeitnow Job Board API Documentation
+ARBEITNOW_API_DOCS = [
     """
-    Rise Jobs API - Endpoint Information
-    
-    Base URL: https://api.joinrise.io/api/v1/jobs/public
+    Arbeitnow Job Board API - Endpoint Information
+
+    Base URL: https://www.arbeitnow.com/api/job-board-api
     Method: GET
-    Description: Retrieves public job listings from the Rise Jobs platform.
-    
-    This endpoint returns job postings that can be filtered by location and paginated.
-    The API is public and does not require authentication.
+    Description: Free public job board API listing jobs mainly in Germany, Switzerland,
+    the Netherlands, the UK, France and other European countries.
+
+    The API is public and does not require authentication. It does NOT offer any
+    server-side filtering: there are no location, keyword or remote parameters.
+    This application downloads a few pages, caches them for about 10 minutes and then
+    filters the jobs itself (by location, keywords and remote) before returning them.
+    Jobs are returned newest first and are refreshed hourly.
     """,
-    
+
     """
-    Rise Jobs API - Query Parameters
-    
-    The API accepts the following query parameters:
-    
+    Arbeitnow Job Board API - Query Parameters
+
+    The upstream API itself only supports pagination:
+
     1. page (integer, optional, default: 1)
-       - Specifies which page of results to retrieve
-       - Use for pagination when there are many results
-       - Must be a positive integer
-       - Example: page=1, page=2, page=3
-    
-    2. limit (integer, optional, default: 10)
-       - Specifies the maximum number of jobs to return per page
-       - Controls pagination size
-       - Recommended range: 10-50
-       - Example: limit=10, limit=20, limit=50
-    
-    3. jobLoc (string, optional)
-       - Filters jobs by location (city or country name)
-       - Case-insensitive matching
-       - Can be a city name (e.g., "Berlin", "New York")
-       - Can be a country name (e.g., "Germany", "United States")
-       - If omitted, returns jobs from all locations
-       - Example: jobLoc=Berlin, jobLoc=Germany, jobLoc=Remote
+       - Page of results to retrieve (each page holds around 100-300 jobs)
+       - Example: ?page=2
+
+    Everything else is handled by THIS application's endpoint GET /api/jobs, which accepts:
+
+    1. location (string, optional)
+       - Country name, city name or "Remote"
+       - Several places can be separated by commas: "Germany, Netherlands"
+       - Matching is case-insensitive and ignores accents (Zurich = Zürich, Munich = München)
+       - If omitted, jobs from all locations are searched
+
+    2. keywords (list of strings, optional)
+       - Job title and skill terms, for example: keywords=react&keywords=developer
+       - ALL keywords must appear in the job title, tags, company or description
+       - Prefer a few short, specific English terms (job title and main skills)
+
+    3. remote (boolean, optional)
+       - true = only remote jobs; false or omitted = no preference
+
+    4. page (integer, default 1) and limit (integer, default 20, max 100)
+       - Pagination over the already filtered results
     """,
-    
+
     """
-    Rise Jobs API - Request Examples
-    
-    Example 1: Get first page with default limit (10 jobs)
-    GET https://api.joinrise.io/api/v1/jobs/public?page=1&limit=10
-    
-    Example 2: Get jobs in a specific location
-    GET https://api.joinrise.io/api/v1/jobs/public?page=1&limit=10&jobLoc=Berlin
-    
-    Example 3: Get more jobs per page
-    GET https://api.joinrise.io/api/v1/jobs/public?page=1&limit=50&jobLoc=Germany
-    
-    Example 4: Get jobs without location filter (all locations)
-    GET https://api.joinrise.io/api/v1/jobs/public?page=1&limit=10
-    
-    Example 5: Get second page of results
-    GET https://api.joinrise.io/api/v1/jobs/public?page=2&limit=10&jobLoc=London
+    Arbeitnow Job Board API - Request Examples
+
+    Upstream API:
+    GET https://www.arbeitnow.com/api/job-board-api
+    GET https://www.arbeitnow.com/api/job-board-api?page=2
+
+    This application's endpoint:
+    GET /api/jobs?location=Germany
+    GET /api/jobs?location=Zurich&keywords=data&keywords=engineer
+    GET /api/jobs?location=Germany,Netherlands&keywords=react&remote=true
+    GET /api/jobs?keywords=python            (any location)
+    GET /api/jobs?location=Remote&keywords=designer
     """,
-    
+
     """
-    Rise Jobs API - Response Structure
-    
-    The API returns a JSON object with the following structure:
-    
+    Arbeitnow Job Board API - Response Structure
+
+    The upstream API returns a JSON object:
+
     {
-        "result": {
-            "jobs": [
-                {
-                    "title": "Job Title",
-                    "locationAddress": "City, Country",
-                    "owner": {
-                        "name": "Company Name"
-                    },
-                    ...other fields...
-                }
-            ]
-        }
+        "data": [
+            {
+                "slug": "senior-software-engineer-munich-42343",
+                "company_name": "Company Name",
+                "title": "Job Title",
+                "description": "<p>HTML description</p>",
+                "remote": false,
+                "url": "https://www.arbeitnow.com/jobs/companies/...",
+                "tags": ["Engineering"],
+                "job_types": ["Unbefristeter arbeitsvertrag"],
+                "location": "Munich",
+                "created_at": 1792065313
+            }
+        ],
+        "links": {"first": "...", "last": null, "prev": null, "next": "...?page=2"},
+        "meta": {"current_page": 1, "per_page": 100, "terms": "...", "info": "..."}
     }
-    
+
     Important fields:
-    - result: Top-level object containing the response
-    - result.jobs: Array of job objects
-    - Each job has: title (string), locationAddress (string), owner.name (string)
-    - Always check if result exists and jobs array is not empty
-    - The jobs array can be empty if no matches are found
+    - data: array of jobs (can be empty)
+    - title, company_name, location (free text), url (link to the job), remote (boolean)
+    - description is HTML and can be empty
+    - created_at is a Unix timestamp in seconds
+    - links.next is null on the last page
     """,
-    
+
     """
-    Rise Jobs API - Best Practices for Location Filtering
-    
-    When filtering by location (jobLoc parameter):
-    
-    1. Use city names for specific cities: "Berlin", "London", "New York"
-    2. Use country names for broader searches: "Germany", "United Kingdom", "USA"
-    3. For remote jobs, try: "Remote", "Anywhere", or omit the jobLoc parameter
-    4. Location matching is case-insensitive
-    5. If location is not found, API may return empty results or all jobs
-    6. Always handle cases where location parameter is None or empty (return all jobs)
-    7. Location doesn't match any jobs (empty results array)
-    8. Location is ambiguous (multiple matches possible)
-    
-    Best practice: Always provide a fallback when location filtering returns no results.
+    Arbeitnow Job Board API - Best Practices for Location Filtering
+
+    Locations in the data are free text, in different languages and formats, for example
+    "Berlin", "Zurich, Zürich, Switzerland", "Amsterdam, Noord-Holland, Netherlands",
+    "Paris office", "Remote". Some jobs have an empty location.
+
+    When choosing the location preference:
+    1. Use English country names ("Germany", "Switzerland", "Netherlands", "United Kingdom")
+       for broad searches. Major cities of known countries are matched to their country.
+    2. Use city names for specific cities ("Berlin", "Zurich", "London").
+    3. Use several comma separated places when the user names several ("Germany, Netherlands").
+    4. For remote work use "Remote" (and set remote to true).
+    5. For a whole region, "Europe" matches jobs in any known European country.
+    6. A location that matches nothing returns no jobs. This is expected: the application then
+       tells the user "No available jobs with those specs". Do not invent locations.
+    7. Country coverage depends on what employers currently post, so some countries may
+       have few or no jobs.
     """,
-    
+
     """
-    Rise Jobs API - Error Handling
-    
-    The API uses standard HTTP status codes:
-    
-    - 200: Success - Jobs retrieved successfully
-    - 400: Bad Request - Invalid parameters (e.g., negative page number)
-    - 404: Not Found - Endpoint not found
-    - 500: Server Error - API server issue
-    
-    Always:
-    1. Check response status code before processing
-    2. Use response.raise_for_status() to handle HTTP errors
-    3. Validate response structure before accessing nested fields
-    4. Handle empty results gracefully (result.jobs might be empty array)
-    5. Check if result key exists before accessing result.jobs
-    6. Handle network errors (connection timeout, DNS errors, etc.)
+    Arbeitnow Job Board API - Error Handling
+
+    The upstream API uses standard HTTP status codes:
+
+    - 200: Success
+    - 4xx / 5xx: Client or server errors, or rate limiting if the API is abused
+
+    In this application:
+    1. No job matches the given location/keywords/remote values: GET /api/jobs returns 200 with
+       an empty list, and the interface shows "No available jobs with those specs".
+    2. The upstream API is unreachable or returns an error: GET /api/jobs returns 502 with a
+       message that the job source is temporarily unavailable. If cached jobs exist they are
+       served instead, even when slightly outdated.
+    3. Network requests use a 30 second timeout.
     """,
-    
+
     """
-    Rise Jobs API - Data Transformation Guidelines
-    
-    When processing API responses:
-    
-    1. Extract jobs from: data.get("result", {}).get("jobs", [])
-       - Always use .get() with defaults to avoid KeyError
-       - Default to empty list if structure is missing
-    
-    2. Map API fields to application model:
-       - title -> job.get("title")
-       - locationAddress -> job.get("locationAddress")
-       - owner.name -> job.get("owner", {}).get("name")
-       - url -> None (not available in current API version)
-    
-    3. Handle missing or null fields:
-       - Use Optional types in models
-       - Provide default values (e.g., "Unknown Company" for missing company)
-       - Filter out jobs with missing required fields if needed
-       - Use safe navigation: job.get("owner", {}).get("name") to avoid errors
+    Arbeitnow Job Board API - Data Transformation Guidelines
+
+    How upstream jobs are mapped to the application's JobResult model:
+
+    - title        <- job["title"]
+    - company      <- job["company_name"]
+    - location     <- job["location"] (None when empty)
+    - url          <- job["url"] (link to the job on Arbeitnow)
+
+    Notes:
+    1. Jobs without a title are skipped.
+    2. Duplicate jobs (same slug) are returned once.
+    3. The HTML description is not returned to the frontend; it is only used for keyword matching.
+    4. Use safe access with .get() because fields can be missing or empty.
     """,
-    
+
     """
-    Rise Jobs API - Pagination Strategy
-    
-    When implementing pagination:
-    
-    1. Start with page=1 for first page
-    2. Use limit to control page size (recommended: 10-50)
-    3. Continue fetching pages until empty results
-    4. For user-facing applications, limit total pages fetched (e.g., max 10 pages)
-    5. Consider caching results to reduce API calls
-    6. Handle rate limiting if API has rate limits
-    
-    Example pagination loop:
-    - Fetch page 1 with limit 10
-    - If results < limit, no more pages
-    - Otherwise, increment page and fetch next page
-    
-    Note: Always validate page and limit parameters are positive integers.
+    Arbeitnow Job Board API - Pagination Strategy
+
+    The upstream API paginates with ?page=N and returns jobs newest first.
+    There is no total page count: links.last is null, and links.next is null on the last page.
+
+    The application downloads up to 5 pages (about 1,000-1,500 jobs) per refresh, in parallel,
+    and caches them for about 10 minutes. Filtering is done on this cached set, so a very rare
+    search may miss matches that are only on later pages.
+
+    For the application's own /api/jobs endpoint, page and limit paginate the filtered results
+    (default limit 20, maximum 100).
     """,
-    
+
     """
-    Rise Jobs API - Integration Notes
-    
-    When integrating this API:
-    
-    1. Use async HTTP client (httpx.AsyncClient) for non-blocking requests
-    2. Set appropriate timeout values
-    3. Use environment variables for API URLs (if they change)
-    4. Implement retry logic for transient failures
-    5. Log API calls for debugging
-    6. Transform API response to match your application's data model
-    7. Handle network errors gracefully (connection timeout, DNS errors, etc.)
-    8. Use type hints and Pydantic models for response validation
-    
+    Arbeitnow Job Board API - Integration Notes
+
+    1. Terms of use: this is a free public API, "please do not abuse". Cache results (done: 10 minutes),
+       avoid unnecessary requests, and link back to Arbeitnow (done: footer link in the interface).
+    2. Jobs are in many languages. Job titles are often in German, French or English, so keywords
+       work best as short, widely used terms (for example "developer", "python", "marketing").
+    3. All keywords must match, so avoid long lists of generic words; they reduce the number of results.
+    4. Use an async HTTP client (httpx.AsyncClient) with a timeout, and handle network errors gracefully.
+
     Current implementation uses:
-    - httpx for async HTTP requests
-    - JobResult Pydantic model for type safety
-    - Optional location parameter for flexible filtering
-    - Safe dictionary access with .get() methods
+    - httpx for async HTTP requests to https://www.arbeitnow.com/api/job-board-api
+    - An in-memory cache of the downloaded jobs
+    - JobResult Pydantic model for the response
+    - Location, keywords and remote filtering done in the application
     """
 ]

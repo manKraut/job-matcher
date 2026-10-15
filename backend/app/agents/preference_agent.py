@@ -36,7 +36,7 @@ def extract_preferences(user_input: str) -> Dict:
     from app.services.rag_utils import get_api_documentation_for_agent
     
     # Query RAG for location filtering, parameter requirements, and best practices
-    rag_query = f"Rise Jobs API location filtering parameters user input: {user_input}"
+    rag_query = f"Arbeitnow job API location filtering keywords parameters user input: {user_input}"
     api_docs = get_api_documentation_for_agent(rag_query, n_results=3)
     
     # Build enhanced system prompt with API documentation

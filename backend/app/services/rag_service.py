@@ -30,7 +30,7 @@ class RAGService:
         # Get or create collection for API documentation
         self.collection = self.client.get_or_create_collection(
             name="api_documentation",
-            metadata={"description": "Rise Jobs API documentation and usage guidelines"}
+            metadata={"description": "Arbeitnow Job Board API documentation and usage guidelines"}
         )
         
         # Initialize OpenAI client for embeddings
@@ -154,6 +154,6 @@ class RAGService:
         self.client.delete_collection(name="api_documentation")
         self.collection = self.client.get_or_create_collection(
             name="api_documentation",
-            metadata={"description": "Rise Jobs API documentation and usage guidelines"}
+            metadata={"description": "Arbeitnow Job Board API documentation and usage guidelines"}
         )
         print("🔄 Collection reset successfully")
