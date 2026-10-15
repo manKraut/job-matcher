@@ -27,7 +27,7 @@ async def fetch_jobs(location: Optional[str] = None, page: int = 1, limit: int =
         params["jobLoc"] = location
     
     # Make API call
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         try:
             response = await client.get(RISE_JOBS_API, params=params)
             response.raise_for_status()

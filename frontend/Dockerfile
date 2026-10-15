@@ -1,10 +1,14 @@
 # Stage 1: Build the frontend
-FROM node:20-alpine as build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
+# Trust the corporate Cisco Umbrella root CA (needed on the company network)
+COPY certs/cisco-umbrella-root.crt /usr/local/share/ca-certificates/cisco-umbrella-root.crt
+ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/cisco-umbrella-root.crt
+
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci --no-audit --no-fund
 
 COPY . .
 RUN npm run build
