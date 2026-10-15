@@ -3,12 +3,10 @@ kind: Ingress
 metadata:
   name: job-matcher-ingress
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    kubernetes.io/ingress.class: "gce"
 spec:
-  ingressClassName: nginx
   rules:
-  - host: jobmatcher.local
-    http:
+  - http:
       paths:
       - path: /api
         pathType: Prefix
