@@ -9,12 +9,11 @@ services:
       - ./backend:/app
     environment:
       - PYTHONUNBUFFERED=1
+      - OPEN_API_KEY=${OPEN_API_KEY}
 
   frontend:
     build: ./frontend
     ports:
       - "80:80"
-    volumes:
-      - ./frontend:/app
     stdin_open: true
     tty: true
