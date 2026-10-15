@@ -1,0 +1,7 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: job-matcher-cert
+spec:
+  domains:
+    - job-matcher.manukraut.com

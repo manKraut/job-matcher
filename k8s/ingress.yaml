@@ -4,9 +4,13 @@ metadata:
   name: job-matcher-ingress
   annotations:
     kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "job-matcher-ip"
+    networking.gke.io/managed-certificates: "job-matcher-cert"
+    networking.gke.io/v1beta1.FrontendConfig: "job-matcher-frontend-config"
 spec:
   rules:
-  - http:
+  - host: job-matcher.manukraut.com
+    http:
       paths:
       - path: /api
         pathType: Prefix
