@@ -58,7 +58,7 @@ Top Jobs Found:
 
     client = get_openai_client()
     response = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4o-mini",
         messages=messages,
         temperature=0.5
     )
